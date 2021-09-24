@@ -37,13 +37,15 @@ class ImageGallerySaverPlugin : FlutterPlugin, MethodCallHandler {
                 val image = call.argument<ByteArray>("imageBytes") ?: return
                 val quality = call.argument<Int>("quality") ?: return
                 val name = call.argument<String>("name")
+                val folderName = call.argument<String>("folderName")
 
-                result.success(saveImageToGallery(BitmapFactory.decodeByteArray(image, 0, image.size), quality, name))
+                result.success(saveImageToGallery(BitmapFactory.decodeByteArray(image, 0, image.size), quality, name, folderName))
             }
             call.method == "saveFileToGallery" -> {
                 val path = call.argument<String>("file") ?: return
                 val name = call.argument<String>("name")
-                result.success(saveFileToGallery(path, name))
+                val folderName = call.argument<String>("folderName")
+                result.success(saveFileToGallery(path, name, folderName))
             }
             else -> result.notImplemented()
         }
@@ -51,9 +53,9 @@ class ImageGallerySaverPlugin : FlutterPlugin, MethodCallHandler {
     }
 
 
-    private fun generateFile(extension: String = "", name: String? = null): File {
-        val storePath = Environment.getExternalStorageDirectory().absolutePath + File.separator + Environment.DIRECTORY_PICTURES
-        val appDir = File(storePath)
+    private fun generateFile(extension: String = "", name: String? = null, folderName: String? = null): File {
+        val folderName = folderName ?: Environment.DIRECTORY_PICTURES
+        val appDir = File(Environment.getExternalStorageDirectory().absolutePath + File.separator + folderName)
         if (!appDir.exists()) {
             appDir.mkdir()
         }
@@ -64,9 +66,9 @@ class ImageGallerySaverPlugin : FlutterPlugin, MethodCallHandler {
         return File(appDir, fileName)
     }
 
-    private fun saveImageToGallery(bmp: Bitmap, quality: Int, name: String?): HashMap<String, Any?> {
+    private fun saveImageToGallery(bmp: Bitmap, quality: Int, name: String?, folderName: String?): HashMap<String, Any?> {
         val context = applicationContext
-        val file = generateFile("jpg", name = name)
+        val file = generateFile("jpg", name = name, folderName = folderName)
         return try {
             val fos = FileOutputStream(file)
             println("ImageGallerySaverPlugin $quality")
@@ -82,11 +84,11 @@ class ImageGallerySaverPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
-    private fun saveFileToGallery(filePath: String, name: String?): HashMap<String, Any?> {
+    private fun saveFileToGallery(filePath: String, name: String?, folderName: String?): HashMap<String, Any?> {
         val context = applicationContext
         return try {
             val originalFile = File(filePath)
-            val file = generateFile(originalFile.extension, name)
+            val file = generateFile(originalFile.extension, name, folderName)
             originalFile.copyTo(file)
 
             val uri = Uri.fromFile(file)

@@ -116,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ByteData? byteData = await (image.toByteData(format: ui.ImageByteFormat.png) as FutureOr<ByteData?>);
     if (byteData != null) {
       final result =
-      await ImageGallerySaver.saveImage(byteData.buffer.asUint8List());
+      await ImageGallerySaver.saveImage(byteData.buffer.asUint8List(), folderName: "lotto1");
       print(result);
       _toastInfo(result.toString());
     }
